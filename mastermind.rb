@@ -19,11 +19,10 @@ end
 
 class Decoder
   
-  attr_accessor :guesses, :best_guess, :TRIES
+  attr_accessor :guesses, :TRIES
 
   def initialize(game_mode)
     @@TRIES = 4
-    @best_guess = ['','','','']
     @game_mode = game_mode
     if @game_mode == 1
       @CODE = rand_code_generator
@@ -49,7 +48,6 @@ class Decoder
     compared = ["", "", "", ""]
     (0..3).each do |i|
       if (dupl_code[i] == guess[i])
-        best_guess[i] = guess[i]
         compared[i] = guess[i].green
         dupl_code[dupl_code.index(guess[i])] = "x"
       end
@@ -87,6 +85,7 @@ class Decoder
 
   def human_decoder()
     (0..@@TRIES).each do |i|
+      puts "Guesses: #{guesses}"
       begin
         puts 'Enter your guess (ex. "1234")'
         guess = gets.chomp
@@ -114,16 +113,49 @@ class Decoder
 
   end
 
+  def best_guess(guess, whitelist)
+    code = self.CODE
+    best_guess = ['','','','']
+    (0..3).each do |i|
+      if code[i] == guess[i]
+        best_guess[i] = guess[i]
+      elsif !code.include?(guess[i])
+        if whitelist.include?(guess[i])
+          whitelist.delete(guess[i])
+        end
+      end
+    end
+    puts guess
+    return best_guess
+  end
+
   def computer_decoder()
+    guess_num = 0
+    puts
     guess = rand_code_generator
+    whitelist = ['1','2','3','4','5','6']
     if (guess == self.CODE)
       puts guess.green
-      puts "Computer won with #{guesses.length + 1} guesses!"
+      puts "Computer won with #{guess_num + 1} guesses!"
       return
     end
     (0..@@TRIES).each do |i|
-      
+      guess = best_guess(guess, whitelist)
+      guess_num +=1
+      guess.each_with_index do |n, i|
+        if n==''
+          guess[i] = whitelist.sample
+        end
+      end
+      guess = guess.join()
+      if guess == self.CODE
+        puts guess.green
+        puts "Computer won with #{guess_num + 1} guesses!"
+        return
+      end
+
     end
+    puts 'Computer lost. Good job'
   end
 
   protected
@@ -134,60 +166,6 @@ class Decoder
 end
 
 
-
-# class CodeMaker < Decoder
-#     def initialize()
-#         begin
-#             puts 'Enter your four digit code: '
-#             code = gets.chomp
-#             if(!compatible_num?(code))
-#                 raise 'Error: Must enter a 4 digit code. Valid digits are from 1-6.'
-#             end
-#         rescue Exception => e
-#             puts e
-#             retry
-#         end
-
-#         @CODE = code
-#         wrong = []
-#         guesses = []
-#         play()
-#     end
-
-#     def play()
-#         comp_guess = rand_code_generator
-#         compare(comp_guess)
-#     end
-    
-#     def compare(guess)
-#         dupl_code = self.CODE.dup
-#         compared = ["", "", "", ""]
-#         (0..3).each do |i|
-#           if (dupl_code[i] == guess[i])
-#             compared[i] = guess[i].green
-#             dupl_code[dupl_code.index(guess[i])] = "x"
-#           end
-#         end
-#         (0..3).each do |i|
-#           if (compared[i] == "")
-#             if (dupl_code.include?(guess[i]))
-#               compared[i] = guess[i]
-#               dupl_code[dupl_code.index(guess[i])] = "x"
-#             else
-#               compared[i] = guess[i].red
-#               wrong.push(guess[i])
-#             end
-#           end
-#         end
-#         guesses.push(compared.join)
-#         puts guesses.last
-#         # puts self.CODE
-    
-#       end
-
-
-
-# end
 
 
 def continue_story()
@@ -210,7 +188,7 @@ puts "Use this feedback to narrow down your guess to the correct code. Good luck
 continue_story
 puts
 while true
-  Decoder.new(1)
+  Decoder.new(2)
   puts "Play again? (y/n)"
   begin
     answer = gets.chomp
