@@ -85,7 +85,6 @@ class Decoder
 
   def human_decoder()
     (0..@@TRIES).each do |i|
-      puts "Guesses: #{guesses}"
       begin
         puts 'Enter your guess (ex. "1234")'
         guess = gets.chomp
@@ -188,7 +187,18 @@ puts "Use this feedback to narrow down your guess to the correct code. Good luck
 continue_story
 puts
 while true
-  Decoder.new(2)
+
+  puts 'Do you want to be the decoder (1) or code maker (2)?'
+  begin
+    num = gets.chomp.to_i
+    raise 'Error: Enter 1 (decoder) or 2 (code maker)' if !(num.to_i==1 || num.to_i==2)
+  rescue Exception=>e
+    puts e 
+    retry
+  end
+      
+
+  Decoder.new(num)
   puts "Play again? (y/n)"
   begin
     answer = gets.chomp
